@@ -13,16 +13,18 @@ DROP TABLE IF EXISTS customers;
 DROP TABLE IF EXISTS geolocation;
 DROP TABLE IF EXISTS product_category_translation;
 
+
 CREATE TABLE customers (
     customer_id              TEXT,
     customer_unique_id       TEXT,
-    customer_zip_code_prefix INTEGER,
+    customer_zip_code_prefix TEXT,
     customer_city            TEXT,
     customer_state           TEXT
 );
 
+
 CREATE TABLE geolocation (
-    geolocation_zip_code_prefix INTEGER,
+    geolocation_zip_code_prefix TEXT,
     geolocation_lat             NUMERIC,
     geolocation_lng             NUMERIC,
     geolocation_city            TEXT,
@@ -31,10 +33,11 @@ CREATE TABLE geolocation (
 
 CREATE TABLE sellers (
     seller_id              TEXT,
-    seller_zip_code_prefix INTEGER,
+    seller_zip_code_prefix TEXT,
     seller_city            TEXT,
     seller_state           TEXT
 );
+
 
 CREATE TABLE products (
     product_id                 TEXT,
@@ -48,6 +51,7 @@ CREATE TABLE products (
     product_width_cm           INTEGER
 );
 
+
 CREATE TABLE orders (
     order_id                      TEXT,
     customer_id                   TEXT,
@@ -59,6 +63,7 @@ CREATE TABLE orders (
     order_estimated_delivery_date TIMESTAMP
 );
 
+
 CREATE TABLE order_items (
     order_id            TEXT,
     order_item_id       INTEGER,
@@ -69,6 +74,7 @@ CREATE TABLE order_items (
     freight_value       NUMERIC
 );
 
+
 CREATE TABLE order_payments (
     order_id             TEXT,
     payment_sequential   INTEGER,
@@ -76,6 +82,7 @@ CREATE TABLE order_payments (
     payment_installments INTEGER,
     payment_value        NUMERIC
 );
+
 
 CREATE TABLE order_reviews (
     review_id               TEXT,
@@ -86,6 +93,7 @@ CREATE TABLE order_reviews (
     review_creation_date    TIMESTAMP,
     review_answer_timestamp TIMESTAMP
 );
+
 
 CREATE TABLE product_category_translation (
     product_category_name         TEXT,
