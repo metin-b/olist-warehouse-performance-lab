@@ -11,6 +11,10 @@
 --     pre-computed here so the analytical queries stay simple.
 --   * Misspelled raw columns (product_*_lenght) are corrected to
 --     *_length in dim_products.
+--   * Lateness is compared by calendar day. order_estimated_delivery_date
+--     has no time of day (verified: 0 rows with a non-midnight time), so a
+--     timestamp comparison would count a delivery on the estimated day as
+--     late. The delay columns are therefore whole days.
 -- ================================================================
 
 BEGIN;
@@ -73,7 +77,7 @@ FROM sellers;
 -- ----------------------------------------------------------------
 -- FACT: orders  (one row per order)
 -- Resolves customer_unique_id; pre-computes delivery + payment
--- late_delivery_days means the order arrived after the estimate.
+-- late_delivery_days = delivered date - estimated date, in whole days.
 -- ----------------------------------------------------------------
 INSERT INTO fact_orders (
     order_id, customer_id, customer_unique_id, order_status,
@@ -97,8 +101,8 @@ SELECT
     o.order_estimated_delivery_date,
     ROUND(EXTRACT(EPOCH FROM (o.order_delivered_customer_date - o.order_purchase_timestamp)) / 86400.0, 2)     AS delivery_days,
     ROUND(EXTRACT(EPOCH FROM (o.order_estimated_delivery_date - o.order_purchase_timestamp)) / 86400.0, 2)     AS estimated_delivery_days,
-    ROUND(EXTRACT(EPOCH FROM (o.order_delivered_customer_date - o.order_estimated_delivery_date)) / 86400.0, 2) AS late_delivery_days,
-    (o.order_delivered_customer_date > o.order_estimated_delivery_date)                                         AS is_delivered_late,
+    (o.order_delivered_customer_date::date - o.order_estimated_delivery_date::date)                             AS late_delivery_days,
+    (o.order_delivered_customer_date::date > o.order_estimated_delivery_date::date)                             AS is_delivered_late,
     pay.payment_total,
     pay.payment_count,
     pay.max_payment_installments
@@ -144,7 +148,8 @@ LEFT JOIN customers c ON o.customer_id = c.customer_id;
 
 -- ----------------------------------------------------------------
 -- FACT: reviews  (one row per review; surrogate key review_sk)
--- delivery_delay_days = delivered - estimated (positive = late).
+-- delivery_delay_days = delivered date - estimated date, in whole days
+-- (negative = early, 0 = on the estimated day, positive = late).
 -- ----------------------------------------------------------------
 INSERT INTO fact_reviews (
     review_id, order_id, customer_unique_id,
@@ -166,8 +171,8 @@ SELECT
     o.order_purchase_timestamp,
     o.order_delivered_customer_date,
     o.order_estimated_delivery_date,
-    ROUND(EXTRACT(EPOCH FROM (o.order_delivered_customer_date - o.order_estimated_delivery_date)) / 86400.0, 2) AS delivery_delay_days,
-    (o.order_delivered_customer_date > o.order_estimated_delivery_date)                                         AS is_delivered_late
+    (o.order_delivered_customer_date::date - o.order_estimated_delivery_date::date)                             AS delivery_delay_days,
+    (o.order_delivered_customer_date::date > o.order_estimated_delivery_date::date)                             AS is_delivered_late
 FROM order_reviews r
 JOIN orders o         ON r.order_id = o.order_id
 LEFT JOIN customers c ON o.customer_id = c.customer_id;
