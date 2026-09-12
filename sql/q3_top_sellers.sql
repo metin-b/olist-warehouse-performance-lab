@@ -1,8 +1,11 @@
 -- q3 — Top 3 sellers by revenue within each product category.
--- Completed orders only; missing categories bucketed as 'unknown'.
+-- Excludes canceled/unavailable orders. Two categories have no English
+-- translation (pc_gamer, portateis_cozinha_e_preparadores_de_alimentos); they
+-- keep their Portuguese name instead of merging into 'unknown', which is
+-- reserved for products with no category at all.
 WITH records AS (
     SELECT
-        COALESCE(p.product_category_name_english, 'unknown') AS category,
+        COALESCE(p.product_category_name_english, p.product_category_name, 'unknown') AS category,
         r.seller_id,
         SUM(r.item_total_value) AS total_sold
     FROM fact_order_items r
