@@ -25,10 +25,13 @@ holds up is the deliverable: an indexing experiment needs user-defined indexes
 and a planner whose plans can be read.
 
 **Alternatives.** DuckDB would be faster on all six queries — it's columnar, so
-it reads only the columns a query touches — but it has no user-defined indexes,
-so the experiment can't exist there. Snowflake has none either, by design:
-pruning on micro-partition metadata does that job, so there is no index to add,
-ignore, or measure.
+it reads only the columns a query touches. It does support `CREATE INDEX`
+(adaptive radix tree indexes), but those mainly serve point lookups and
+constraints, and its automatic min-max zonemaps already skip data on range
+filters, so the trade-off this experiment measures — sequential scan against an
+index plus heap fetches — wouldn't show up the same way. Snowflake's standard
+tables have no user-defined indexes by design: pruning on micro-partition
+metadata does that job.
 
 **When I'd choose differently.** DuckDB for analytics on one machine with no
 server to run; its limit is being embedded and single-writer, not data volume.

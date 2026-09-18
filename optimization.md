@@ -81,7 +81,7 @@ Row-store versus columnar is worth naming here: Postgres stores a
 low-cardinality column like `order_status` (~6 values) in full on every row, so
 a scan reads all of it. A columnar engine (DuckDB, ClickHouse, Snowflake) would
 dictionary-encode it and read only that column, making the full scan cheap
-without any index — which is also why this experiment isn't possible there.
+without any index — so the same trade-off would look very different there.
 
 ## What this does not establish
 
